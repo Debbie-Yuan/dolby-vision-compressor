@@ -1,0 +1,73 @@
+name: build-toolchain
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "toolchain/**"
+      - ".github/workflows/build-toolchain.yml"
+
+jobs:
+  source-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Archive source bundle
+        run: |
+          tar -C . -czf mov-hybrid-source-bundle.tar.gz .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mov-hybrid-source-bundle
+          path: mov-hybrid-source-bundle.tar.gz
+
+  linux-amd64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git build-essential cmake pkg-config yasm nasm \
+            clang make autoconf automake libtool \
+            python3 python3-pip curl cargo rustc
+
+      - name: Build source toolchain
+        run: |
+          chmod +x toolchain/bootstrap.sh
+          toolchain/bootstrap.sh
+
+      - name: Archive toolchain
+        run: |
+          tar -C toolchain -czf mov-hybrid-toolchain-linux-amd64.tar.gz install
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mov-hybrid-toolchain-linux-amd64
+          path: mov-hybrid-toolchain-linux-amd64.tar.gz
+
+  openwrt-aarch64-sdk:
+    runs-on: ubuntu-latest
+    if: ${{ vars.OPENWRT_SDK_URL != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download OpenWrt SDK
+        env:
+          OPENWRT_SDK_URL: ${{ vars.OPENWRT_SDK_URL }}
+        run: |
+          mkdir -p openwrt-sdk
+          curl -L "$OPENWRT_SDK_URL" -o openwrt-sdk/sdk.tar.zst
+
+      - name: Archive OpenWrt SDK input
+        run: |
+          tar -C openwrt-sdk -caf mov-hybrid-openwrt-aarch64-sdk-input.tar.zst sdk.tar.zst
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mov-hybrid-openwrt-aarch64-sdk-input
+          path: mov-hybrid-openwrt-aarch64-sdk-input.tar.zst
