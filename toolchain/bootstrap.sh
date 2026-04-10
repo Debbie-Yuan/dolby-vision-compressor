@@ -58,6 +58,10 @@ install -Dm755 "$SRC_ROOT/dovi_tool/target/release/dovi_tool" "$INSTALL_ROOT/pre
 echo "Building ffmpeg"
 pushd "$SRC_ROOT/FFmpeg" >/dev/null
 make distclean >/dev/null 2>&1 || true
+export PATH="$INSTALL_ROOT/prefix/bin:$PATH"
+export LD_LIBRARY_PATH="$INSTALL_ROOT/prefix/lib:${LD_LIBRARY_PATH:-}"
+export DYLD_LIBRARY_PATH="$INSTALL_ROOT/prefix/lib:${DYLD_LIBRARY_PATH:-}"
+export PKG_CONFIG_PATH="$INSTALL_ROOT/prefix/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 ./configure \
   --prefix="$INSTALL_ROOT/prefix" \
   --bindir="$INSTALL_ROOT/prefix/bin" \

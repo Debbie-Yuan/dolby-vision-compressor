@@ -16,12 +16,12 @@ jobs:
 
       - name: Archive source bundle
         run: |
-          tar -C . -czf mov-hybrid-source-bundle.tar.gz .
+          tar -C . --exclude='./mov-hybrid-source-bundle.tar.gz' -czf "$RUNNER_TEMP/mov-hybrid-source-bundle.tar.gz" .
 
       - uses: actions/upload-artifact@v4
         with:
           name: mov-hybrid-source-bundle
-          path: mov-hybrid-source-bundle.tar.gz
+          path: ${{ runner.temp }}/mov-hybrid-source-bundle.tar.gz
 
   linux-amd64:
     runs-on: ubuntu-latest
